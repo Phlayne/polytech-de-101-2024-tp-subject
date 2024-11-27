@@ -7,6 +7,7 @@ import pandas as pd
 today_date = datetime.now().strftime("%Y-%m-%d")
 PARIS_CITY_CODE = 1
 TOULOUSE_CITY_CODE = 2
+NANTES_CITY_CODE = 3
 
 def create_consolidate_tables():
     con = duckdb.connect(database = "data/duckdb/mobility_analysis.duckdb", read_only = False)
@@ -80,7 +81,7 @@ def consolidate_station_data():
         "bike_stands"
     ]]
 
-    paris_station_data_df.rename(columns={
+    toulouse_raw_data_df.rename(columns={
         "number": "code",
         "name": "name",
         "position.lon": "longitude",
@@ -91,6 +92,42 @@ def consolidate_station_data():
     }, inplace=True)
 
     con.execute("INSERT OR REPLACE INTO CONSOLIDATE_STATION SELECT * FROM toulouse_station_data_df;")
+
+    # Consolidation logic for Nantes Bicycle data
+    with open(f"data/raw_data/{today_date}/nantes_realtime_bicycle_data.json") as fd:
+        data = json.load(fd)
+    
+    nantes_raw_data_df = pd.json_normalize(data)
+    nantes_raw_data_df["id"] = nantes_raw_data_df["number"].apply(lambda x: f"{NANTES_CITY_CODE}-{x}")
+    nantes_raw_data_df["contract_name"] = nantes_raw_data_df["contract_name"].apply(lambda s: s.capitalize())
+    nantes_raw_data_df["city_code"] = None
+    nantes_raw_data_df["created_date"] = date.today()
+
+    nantes_station_data_df = nantes_raw_data_df[[
+        "id",
+        "number",
+        "name",
+        "contract_name",
+        "city_code",
+        "address",
+        "position.lon",
+        "position.lat",
+        "status",
+        "created_date",
+        "bike_stands"
+    ]]
+
+    nantes_raw_data_df.rename(columns={
+        "number": "code",
+        "name": "name",
+        "position.lon": "longitude",
+        "position.lat": "latitude",
+        "status": "status",
+        "contract_name": "city_name",
+        "bike_stands": "capacity"
+    }, inplace=True)
+
+    con.execute("INSERT OR REPLACE INTO CONSOLIDATE_STATION SELECT * FROM nantes_station_data_df;")
 
     con.execute("""
         UPDATE CONSOLIDATE_STATION
@@ -139,7 +176,7 @@ def consolidate_station_statement_data():
 
     paris_raw_data_df = pd.json_normalize(data)
     paris_raw_data_df["station_id"] = paris_raw_data_df["stationcode"].apply(lambda x: f"{PARIS_CITY_CODE}-{x}")
-    paris_raw_data_df["created_date"] = datetime.fromisoformat('2024-10-21')
+    paris_raw_data_df["created_date"] = date.today()
     paris_station_statement_data_df = paris_raw_data_df[[
         "station_id",
         "numdocksavailable",
@@ -162,7 +199,7 @@ def consolidate_station_statement_data():
 
     toulouse_raw_data_df = pd.json_normalize(data)
     toulouse_raw_data_df["station_id"] = toulouse_raw_data_df["number"].apply(lambda x: f"{TOULOUSE_CITY_CODE}-{x}")
-    toulouse_raw_data_df["created_date"] = datetime.fromisoformat('2024-10-21')
+    toulouse_raw_data_df["created_date"] = date.today()
     toulouse_station_statement_data_df = toulouse_raw_data_df[[
         "station_id",
         "available_bike_stands",
@@ -178,3 +215,26 @@ def consolidate_station_statement_data():
     }, inplace=True)
 
     con.execute("INSERT OR REPLACE INTO CONSOLIDATE_STATION_STATEMENT SELECT * FROM toulouse_station_statement_data_df;")
+
+    # Consolidate station statement data for Nantes
+    with open(f"data/raw_data/{today_date}/nantes_realtime_bicycle_data.json") as fd:
+        data = json.load(fd)
+
+    nantes_raw_data_df = pd.json_normalize(data)
+    nantes_raw_data_df["station_id"] = nantes_raw_data_df["number"].apply(lambda x: f"{NANTES_CITY_CODE}-{x}")
+    nantes_raw_data_df["created_date"] = date.today()
+    nantes_station_statement_data_df = nantes_raw_data_df[[
+        "station_id",
+        "available_bike_stands",
+        "available_bikes",
+        "last_update",
+        "created_date"
+    ]]
+    
+    nantes_station_statement_data_df.rename(columns={
+        "available_bike_stands": "bicycle_docks_available",
+        "available_bikes": "bicycle_available",
+        "last_update": "last_statement_date",
+    }, inplace=True)
+
+    con.execute("INSERT OR REPLACE INTO CONSOLIDATE_STATION_STATEMENT SELECT * FROM nantes_station_statement_data_df;")

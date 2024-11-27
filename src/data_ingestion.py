@@ -3,6 +3,7 @@ from datetime import datetime
 
 import json
 import requests
+from tqdm import tqdm
 
 def get_paris_realtime_bicycle_data():
     
@@ -12,10 +13,9 @@ def get_paris_realtime_bicycle_data():
     
     serialize_data(response.text, "paris_realtime_bicycle_data.json")
 
-
 def get_toulouse_realtime_bicycle_data():
     def get_url(offset):
-        return "https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/api-velo-toulouse-temps-reel/records?limit=20&offset=" + str(offset)
+        return f"https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/api-velo-toulouse-temps-reel/records?limit=20&offset={offset}"
     
     response = requests.request("GET", get_url(0))
     response_json = response.json()
@@ -25,12 +25,31 @@ def get_toulouse_realtime_bicycle_data():
     full_data = response_json["results"]
 
     increment = 20
-    for offset in range(increment, total_count, increment):
+    for offset in tqdm(range(increment, total_count, increment), desc="Fetching Toulouse data"):
         response = requests.request("GET", get_url(offset))
         full_data.extend(response.json()["results"])
     
     raw_json = json.dumps(full_data)
     serialize_data(raw_json, "toulouse_realtime_bicycle_data.json")
+
+def get_nantes_realtime_bicycle_data():
+    def get_url(offset):
+        return f"https://data.nantesmetropole.fr/api/explore/v2.1/catalog/datasets/244400404_stations-velos-libre-service-nantes-metropole-disponibilites/records?limit=20&offset={offset}"
+    
+    response = requests.request("GET", get_url(0))
+    response_json = response.json()
+
+    total_count = response_json["total_count"]
+
+    full_data = response_json["results"]
+
+    increment = 20
+    for offset in tqdm(range(increment, total_count, increment), desc="Fetching Nantes data"):
+        response = requests.request("GET", get_url(offset))
+        full_data.extend(response.json()["results"])
+    
+    raw_json = json.dumps(full_data)
+    serialize_data(raw_json, "nantes_realtime_bicycle_data.json")
 
 def get_cities():
     url = "https://geo.api.gouv.fr/communes"
