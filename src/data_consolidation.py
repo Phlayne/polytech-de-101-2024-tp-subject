@@ -63,7 +63,7 @@ def consolidate_station_data():
     
     toulouse_raw_data_df = pd.json_normalize(data)
     toulouse_raw_data_df["id"] = toulouse_raw_data_df["number"].apply(lambda x: f"{TOULOUSE_CITY_CODE}-{x}")
-    toulouse_raw_data_df["contract_name"] = toulouse_raw_data_df["contract_name"].apply(lambda s: s.capitalize())
+    toulouse_raw_data_df["contract_name"] = toulouse_raw_data_df["contract_name"].apply(lambda s: s.capitalize()) # Ajout d'une majuscule sur le nom de la ville
     toulouse_raw_data_df["city_code"] = None
     toulouse_raw_data_df["created_date"] = date.today()
 
@@ -129,6 +129,7 @@ def consolidate_station_data():
 
     con.execute("INSERT OR REPLACE INTO CONSOLIDATE_STATION SELECT * FROM nantes_station_data_df;")
 
+    # Remplir la colonne city_code à partir de la city_name correspondante présente dans CONSOLIDATE_STATION 
     con.execute("""
         UPDATE CONSOLIDATE_STATION
         SET CITY_CODE = (
@@ -137,13 +138,13 @@ def consolidate_station_data():
             WHERE CONSOLIDATE_CITY.NAME = CONSOLIDATE_STATION.CITY_NAME
         )
         WHERE CITY_CODE IS NULL;
-    """) # Remplir la colonne city_code à partir de la city_name correspondante présente dans CONSOLIDATE_STATION 
+    """) 
 
 def consolidate_city_data():
 
     con = duckdb.connect(database = "data/duckdb/mobility_analysis.duckdb", read_only = False)
     data = {}
-
+     # Changement du path pour recuperer les données depuis cities.jso au lieu des données de Paris
     with open(f"data/raw_data/{today_date}/cities.json") as fd:
         data = json.load(fd)
 
