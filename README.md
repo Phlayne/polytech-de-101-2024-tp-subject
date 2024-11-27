@@ -1,6 +1,6 @@
 # Sujet de travaux pratiques "Introduction à la data ingénierie"
 
-Aboustait Kenzsée et Rougier Arnaud 
+Aboustait Kenzée et Rougier Arnaud 
 
 ## Travail effectué 
 Pour la réalisation de ce TP nous avons d'abord pris connaissance de l'ensemble des fichiers fournis ainsi que des différentes tables que nous utiliserons. 
