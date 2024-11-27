@@ -1,5 +1,6 @@
 # Sujet de travaux pratiques "Introduction à la data ingénierie"
 
+Aboustait Kenzsée et Rougier Arnaud 
 
 ## Travail effectué 
 Pour la réalisation de ce TP nous avons d'abord pris connaissance de l'ensemble des fichiers fournis ainsi que des différentes tables que nous utiliserons. 
@@ -30,7 +31,7 @@ Pour les deux fonctions consolidate_station_data() et consolidate_station_statem
 Nous n'avons pas eu à modifier cette partie du code. 
 
 ### Test effectués : 
-```
+```sql
 -- Nb d'emplacements disponibles de vélos dans une ville
 SELECT dm.NAME, tmp.SUM_BICYCLE_DOCKS_AVAILABLE
 FROM DIM_CITY dm INNER JOIN (
@@ -52,7 +53,7 @@ WHERE lower(dm.NAME) in ('paris', 'nantes', 'vincennes', 'toulouse');
 │ Nantes    │                        1466 │
 ___________________________________________
 ```
-```
+```sql
 -- Nb de vélos disponibles en moyenne dans chaque station
 SELECT ds.name, ds.code, ds.address, tmp.avg_dock_available
 FROM DIM_STATION ds JOIN (
@@ -75,19 +76,3 @@ Limit  5
 │ Pierre et Marie Curie - Maurice Thorez │ 42016   │         │  4.666666666666667 │
 └────────────────────────────────────────┴─────────┴─────────┴────────────────────┘
 ```
-
-Le sujet devra être rendu sous la forme d'un repository GitHub. Le projet peut être fait seul ou en duo.
-
-### Barème utilisé pour la notation finale :
-
-- Les ingestions fonctionnent correctement et produisent des fichiers json localement (5 points)
-
-- La consolidation actuelle est correctement enrichie avec les nouvelles données (5 points)
-
-- L'agrégation des données est correctement réalisée et les requêtes SQL ci-dessus fonctionnent correctement (5 points)
-
-- Le projet est correctement documenté (installation, exécution, explication de la logique du pipeline) (5 points)
-
-- 2 points bonus pour la clarté générale du code (commentaires, noms de variables, etc.)
-
-- 2 points bonus si d'autres sources de données sont ajoutées pour enrichir l'analyse finale. Attention, le projet doit fonctionner correctement.
